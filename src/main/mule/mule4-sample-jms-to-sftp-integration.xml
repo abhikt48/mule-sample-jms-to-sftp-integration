@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="f22f5c00-76a6-454b-8dca-318b1a6bd5d2" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="50a7b1c1-223c-416a-b08d-482ea980728c" >
+		<sftp:connection host="localhost" username="test" password="test" />
+	</sftp:config>
+	<flow name="mule4-sample-jms-to-sftp-integrationFlow" doc:id="f4151c46-33b4-42a7-b2bc-d850aa37fea5" >
+		<jms:listener doc:name="On New Message" doc:id="79e16120-587e-4990-b389-c425fbc02762" config-ref="JMS_Config" destination="source" ackMode="MANUAL">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="ae3bf9b0-1ed2-4fc0-bf65-8f8b724f9c49" message="#['Request received from user' ++ payload]"/>
+		<sftp:write doc:name="Write" doc:id="7710cbe2-75ae-482e-9131-55f640440a7e" config-ref="SFTP_Config" path="#['/C:/Software/Test/transformed-output/' ++ attributes.ackId ++ '.txt']" createParentDirectories="false"/>
+		<jms:ack doc:name="Ack" doc:id="fb148aff-cc61-454b-a402-5cb0cdc2bc98" ackId="#[attributes.ackId]"/>
+	</flow>
+</mule>
